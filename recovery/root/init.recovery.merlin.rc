@@ -76,11 +76,11 @@ service recovery /sbin/recovery
 ### init.rc
 ######
 
-on early-init
-    write /sys/fs/selinux/checkreqprot 0
-    setcon u:r:init:s0
-    restorecon /postinstall
-    start ueventd
+# on early-init
+#     write /sys/fs/selinux/checkreqprot 0
+#     seclabel u:r:init:s0
+#     restorecon /postinstall
+#    start ueventd
 
 service set_permissive /sbin/permissive.sh
     oneshot
@@ -122,8 +122,8 @@ on boot
     domainname localdomain
     class_start default
 
-on load_all_props_action
-    load_all_props
+# on load_all_props_action
+#     load_all_props
 
 on load_system_props_action
     load_system_props
@@ -147,8 +147,8 @@ on late-init
     trigger early-boot
     trigger boot
 
-on property:sys.powerctl=*
-    powerctl ${sys.powerctl}
+# on property:sys.powerctl=*
+#     powerctl ${sys.powerctl}
 
 service ueventd /sbin/ueventd
     critical
