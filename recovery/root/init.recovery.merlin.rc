@@ -1,0 +1,73 @@
+######
+### init.recovery.adbd.rc
+######
+
+on early-init
+    setprop sys.usb.configfs 0
+
+service fastbootd /sbin/fastbootd
+    disabled
+    setenv LD_LIBRARY_PATH /sbin/fastboot:/sbin:/usr/lib64:/usr/lib:/sbin/lib64:/sbin/lib
+    group system root readproc
+    seclabel u:r:fastbootd:s0
+
+service adbd /sbin/adbd --root_seclabel=u:r:su:s0 --device_banner=recovery
+    socket adbd stream 660 system system
+    seclabel u:r:adbd:s0
+
+on property:service.adb.root=1
+    restart adbd
+
+on fs && property:ro.debuggable=1
+    setprop sys.usb.config adb
+
+######
+### init.recovery.ldconfig.rc
+######
+
+on fs
+    export LD_CONFIG_FILE /sbin/ld.config.txt
+
+######
+### init.recovery.logd.rc
+######
+
+on load_all_props_action
+    start logd
+
+on load_persist_props_action
+    start logd
+
+on early-fs
+    start logd
+
+service logd /sbin/logd
+    socket logd stream 0666 logd logd
+    socket logdr seqpacket 0666 logd logd
+    socket logdw dgram+passcred 0222 logd logd
+    file /proc/kmsg r
+    file /dev/kmsg w
+    user logd
+    group root system readproc
+    capabilities SYSLOG AUDIT_CONTROL SETGID
+    seclabel u:r:logd:s0
+
+######
+### init.recovery.sar.rc
+######
+
+on fs
+	export ANDROID_ROOT /system_root
+
+######
+### init.recovery.service.rc
+######
+
+on boot
+    wait /sbin/fingerprint_ready 9
+    start recovery
+
+service recovery /sbin/recovery
+    socket recovery stream 422 system system
+    disabled
+    seclabel u:r:recovery:s0
