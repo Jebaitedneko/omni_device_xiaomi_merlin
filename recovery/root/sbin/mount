@@ -1,0 +1,18 @@
+#!sbin/sh
+
+# fix magisk.zip install script
+# mount --move /system /system_root will be error on android-10.0
+
+
+mount_cmd="/sbin/busybox mount"
+
+if [ $# -eq 0 ]; then
+  $mount_cmd
+elif [ "$*" = "--move /system /system_root" ]; then
+  umount /system || umount -l /system
+  sleep 1
+  $mount_cmd /system_root
+else
+  $mount_cmd "$@"
+fi
+
