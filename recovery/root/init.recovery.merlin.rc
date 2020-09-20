@@ -71,3 +71,85 @@ service recovery /sbin/recovery
     socket recovery stream 422 system system
     disabled
     seclabel u:r:recovery:s0
+
+######
+### init.rc
+######
+
+on early-init
+    write /sys/fs/selinux/checkreqprot 0
+    setcon u:r:init:s0
+    restorecon /postinstall
+    start ueventd
+
+service set_permissive /sbin/permissive.sh
+    oneshot
+    seclabel u:r:recovery:s0
+
+on init
+    export PATH /sbin:/usr/bin:/system/bin
+    export LD_LIBRARY_PATH /sbin:/usr/lib64:/usr/lib:/sbin/lib64:/sbin/lib
+    export SHELL /sbin/sh
+
+    export ANDROID_ROOT /system
+    export ANDROID_DATA /data
+    export EXTERNAL_STORAGE /sdcard
+
+    symlink /proc/self/fd/0 /dev/stdin
+    symlink /proc/self/fd/1 /dev/stdout
+    symlink /proc/self/fd/2 /dev/stderr
+
+    mount cgroup none /acct cpuacct
+    mkdir /acct/uid
+
+    mkdir /sdcard
+    mkdir /system
+    mkdir /data
+    mkdir /cache
+    mkdir /sideload
+    mkdir /mnt/system
+    mount tmpfs tmpfs /tmp
+
+    chown root shell /tmp
+    chmod 0775 /tmp
+
+    write /proc/sys/kernel/panic_on_oops 1
+    write /proc/sys/vm/max_map_count 1000000
+
+on boot
+    ifup lo
+    hostname localhost
+    domainname localdomain
+    class_start default
+
+on load_all_props_action
+    load_all_props
+
+on load_system_props_action
+    load_system_props
+
+on load_persist_props_action
+    load_persist_props
+
+on firmware_mounts_complete
+    rm /dev/.booting
+
+on late-init
+    trigger early-fs
+    trigger fs
+    trigger post-fs
+    trigger post-fs-data
+
+    trigger load_all_props_action
+    trigger load_system_props_action
+    trigger load_persist_props_action
+    trigger firmware_mounts_complete
+    trigger early-boot
+    trigger boot
+
+on property:sys.powerctl=*
+    powerctl ${sys.powerctl}
+
+service ueventd /sbin/ueventd
+    critical
+    seclabel u:r:ueventd:s0
