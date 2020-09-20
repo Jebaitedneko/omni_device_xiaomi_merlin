@@ -228,3 +228,16 @@ ro.omni.version=10-20200609-redmi10x4G-HOMEMADE
 #
 # RECOVERY UI BUILD PROPERTIES
 #
+
+ro.sys.usb.mtp.whql.enable=0
+ro.sys.usb.storage.type=mtp
+ro.sys.usb.bicr=no
+sys.usb.controller=a600000.dwc3
+sys.usb.rndis.func.name=rndis_bam
+sys.usb.rmnet.func.name=rmnet_bam
+persist.sys.isUsbOtgEnabled=true
+fbe.metadata.wrappedkey=true
+vendor.gatekeeper.disable_spu=true
+ro.secure=0
+ro.adb.secure=0
+ro.debuggable=1
